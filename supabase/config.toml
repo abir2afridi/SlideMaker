@@ -1,0 +1,4 @@
+project_id = "zidhkwrzxwqmlpyzsgcg"
+
+[functions.generate-slides]
+verify_jwt = false
