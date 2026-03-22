@@ -1,4 +1,7 @@
-project_id = "zidhkwrzxwqmlpyzsgcg"
+project_id = "rcwobqlquxrlkphbalvv"
 
 [functions.generate-slides]
+verify_jwt = false
+
+[functions.generate-single-image]
 verify_jwt = false

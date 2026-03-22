@@ -1,8 +1,8 @@
-import { Slide, Block } from '@/types/presentation';
+import { Slide, Block, BlockType, BlockContent } from '@/types/presentation';
 
-const createBlock = (type: string, content: unknown): Block => ({
+const createBlock = (type: string, content: BlockContent): Block => ({
   id: `b${Math.random().toString(36).substr(2, 9)}`,
-  type: type as any,
+  type: type as BlockType,
   content
 });
 

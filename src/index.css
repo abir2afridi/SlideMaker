@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Indie+Flower&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Shadows+Into+Light&family=Homemade+Apple&family=Nothing+You+Could+Do&family=Reenie+Beanie&family=Sacramento&family=Satisfy&family=Rock+Salt&family=Architects+Daughter&family=Just+Another+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&family=Amatic+SC:wght@400;700&family=Coming+Soon&family=Cover+By+Your+Grace&family=Crafty+Girls&family=Gochi+Hand&family=Handlee&family=League+Script&family=Bad+Script&family=DM+Serif+Display&family=Inter:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -83,6 +83,24 @@
     --sidebar-ring: 239 84% 67%;
     --surface: 223 47% 11%;
     --surface-foreground: 218 11% 65%;
+
+    /* Handwriting Specifics */
+    --ink-blue: 215 70% 60%;
+    --ink-black: 220 10% 80%;
+    --ink-red: 0 65% 55%;
+    --paper-white: 220 18% 16%;
+    --paper-cream: 220 15% 18%;
+    --paper-lined: 215 20% 35%;
+  }
+
+  :root {
+    /* Handwriting Specifics Light */
+    --ink-blue: 215 75% 35%;
+    --ink-black: 220 15% 12%;
+    --ink-red: 0 72% 45%;
+    --paper-white: 0 0% 100%;
+    --paper-cream: 38 40% 94%;
+    --paper-lined: 215 30% 80%;
   }
 }
 
@@ -120,6 +138,24 @@
   .animate-in-fast {
     animation: fadeInUp 0.2s ease-out;
   }
+  .animate-gradient {
+    animation: gradient-move 10s ease infinite;
+  }
+  .bg-300\% {
+    background-size: 300% 300%;
+  }
+}
+
+@keyframes gradient-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes fadeInUp {
@@ -142,4 +178,126 @@
   width: 1920px;
   height: 1080px;
   transform-origin: center center;
+}
+
+/* Handwriting Utilities */
+.font-handwriting-caveat { font-family: 'Caveat', cursive; }
+.font-handwriting-dancing { font-family: 'Dancing Script', cursive; }
+.font-handwriting-indie { font-family: 'Indie Flower', cursive; }
+.font-handwriting-kalam { font-family: 'Kalam', cursive; }
+.font-handwriting-patrick { font-family: 'Patrick Hand', cursive; }
+.font-handwriting-shadows { font-family: 'Shadows Into Light', cursive; }
+.font-handwriting-homemade { font-family: 'Homemade Apple', cursive; }
+.font-handwriting-nothing { font-family: 'Nothing You Could Do', cursive; }
+.font-handwriting-reenie { font-family: 'Reenie Beanie', cursive; }
+.font-handwriting-sacramento { font-family: 'Sacramento', cursive; }
+.font-handwriting-satisfy { font-family: 'Satisfy', cursive; }
+.font-handwriting-rock { font-family: 'Rock Salt', cursive; }
+.font-handwriting-architects { font-family: 'Architects Daughter', cursive; }
+.font-handwriting-just { font-family: 'Just Another Hand', cursive; }
+.font-handwriting-permanent { font-family: 'Permanent Marker', cursive; }
+.font-handwriting-gloria { font-family: 'Gloria Hallelujah', cursive; }
+.font-handwriting-amatic { font-family: 'Amatic SC', cursive; }
+.font-handwriting-coming { font-family: 'Coming Soon', cursive; }
+.font-handwriting-covered { font-family: 'Covered By Your Grace', cursive; }
+.font-handwriting-crafty { font-family: 'Crafty Girls', cursive; }
+.font-handwriting-gochi { font-family: 'Gochi Hand', cursive; }
+.font-handwriting-handlee { font-family: 'Handlee', cursive; }
+.font-handwriting-league { font-family: 'League Script', cursive; }
+.font-handwriting-bad { font-family: 'Bad Script', cursive; }
+
+.paper-ruled {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    hsl(var(--paper-lined)) 31px,
+    hsl(var(--paper-lined)) 32px
+  );
+  background-position: 0 8px;
+}
+
+.paper-dotted {
+  background-image: radial-gradient(circle, hsl(var(--paper-lined)) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.paper-grid {
+  background-image:
+    linear-gradient(hsl(var(--paper-lined) / 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--paper-lined) / 0.4) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.paper-college {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 23px,
+    hsl(var(--paper-lined)) 23px,
+    hsl(var(--paper-lined)) 24px
+  );
+  background-position: 0 8px;
+}
+
+.paper-aged {
+  background-color: #f5e6c8;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 90, 43, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 90, 43, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(139, 90, 43, 0.05) 0%, transparent 40%);
+}
+
+.dark .paper-aged {
+  background-color: hsl(30, 15%, 18%);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(139, 90, 43, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139, 90, 43, 0.08) 0%, transparent 50%);
+}
+
+.paper-blueprint {
+  background-color: #1a3a5c;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.paper-legal {
+  background-color: #fff9c4;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    hsl(50, 40%, 75%) 31px,
+    hsl(50, 40%, 75%) 32px
+  );
+  background-position: 0 8px;
+}
+
+.dark .paper-legal {
+  background-color: hsl(50, 20%, 16%);
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    hsl(50, 20%, 28%) 31px,
+    hsl(50, 20%, 28%) 32px
+  );
+  background-position: 0 8px;
+}
+
+.paper-margin {
+  border-left: 2px solid hsl(0 60% 70%);
+  padding-left: 2.5rem;
+}
+
+.ink-smudge {
+  filter: blur(0.3px);
+  opacity: 0.95;
+}
+
+.handwriting-variation {
+  letter-spacing: -0.02em;
+  word-spacing: 0.05em;
+}
+
+.bg-paper-white {
+  background-color: hsl(var(--paper-white));
 }

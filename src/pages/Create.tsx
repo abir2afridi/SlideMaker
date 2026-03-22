@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Wand2, Presentation, BarChart3, FileText, Globe, Loader2, Sparkles, Users, ArrowRight } from 'lucide-react';
+import { Wand2, Presentation, BarChart3, FileText, Globe, Loader2, Sparkles, Users, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { generateSlidesFromAI, savePresentation } from '@/lib/api';
@@ -19,35 +19,70 @@ const presetPrompts = [
 export default function CreatePage() {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const steps = [
+    "Analyzing your prompt...",
+    "Brainstorming with Gemini 2.0 Flash...",
+    "Structuring presentation modules...",    "Crafting detailed slide content...",
+    "Assembling your professional deck..."
+  ];
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
   }, []);
 
+  useEffect(() => {
+    if (isGenerating) {
+      const interval = setInterval(() => {
+        setGenerationStep(prev => (prev < steps.length - 1 ? prev + 1 : prev));
+      }, 4000);
+      return () => clearInterval(interval);
+    } else {
+      setGenerationStep(0);
+    }
+  }, [isGenerating, steps.length]);
+
   const handleGenerate = async (text?: string, type?: string) => {
     const finalPrompt = text || prompt;
     if (!finalPrompt.trim()) return;
     setIsGenerating(true);
+    setGenerationStep(0);
 
     try {
-      // Try AI generation
-      const result = await generateSlidesFromAI(finalPrompt, type || 'pitch-deck');
+      const result = await generateSlidesFromAI(finalPrompt, 'English', 8);
 
       if (isLoggedIn && result.slides?.length) {
-        // Save to DB
         const saved = await savePresentation(
-          result.title || 'Untitled Presentation',
+          result.presentation_title || result.title || finalPrompt,
           result.description || '',
           result.slides,
-          { primaryColor: '#4F46E5', accentColor: '#10B981', fontHeading: 'Inter', fontBody: 'Lora', style: 'modern' },
+          { 
+            name: 'Modern Indigo',
+            primaryColor: '#4F46E5', 
+            accentColor: '#10B981', 
+            backgroundColor: '#FFFFFF',
+            textColor: '#1F2937',
+            fontHeading: 'Inter', 
+            fontBody: 'Lora', 
+            style: 'modern',
+            borderRadius: '0.75rem'
+          },
         );
         navigate(`/editor/${saved.id}`);
+      } else if (result.slides?.length) {
+        navigate('/editor/new', { 
+          state: { 
+            prompt: finalPrompt, 
+            slides: result.slides, 
+            title: result.presentation_title || result.title || finalPrompt 
+          } 
+        });
       } else {
-        // Navigate with generated data in state
-        navigate('/editor/new', { state: { prompt: finalPrompt, slides: result.slides, title: result.title } });
+        throw new Error("No slides generated");
       }
     } catch (err: unknown) {
       console.error(err);
@@ -56,7 +91,6 @@ export default function CreatePage() {
         description: err instanceof Error ? err.message : 'Please try again with a different prompt.',
         variant: 'destructive',
       });
-      // Fallback to local generation
       const slides = generatePitchDeck(finalPrompt);
       navigate('/editor/new', { state: { prompt: finalPrompt, slides, title: finalPrompt } });
     } finally {
@@ -65,93 +99,143 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px]" />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="w-full max-w-2xl"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-2xl z-10"
       >
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4" />
-            AI-Powered Generation
-          </div>
-          <h1 className="text-4xl font-display font-bold text-foreground mb-2">
-            What will you <span className="text-gradient">create</span>?
-          </h1>
-          <p className="text-muted-foreground">Describe your presentation and let AI do the heavy lifting.</p>
-        </div>
-
-        {/* Prompt Input */}
-        <div className="relative mb-6">
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g. Create a startup pitch deck for an AI-powered design tool targeting enterprise teams..."
-            className="w-full h-32 p-4 pr-14 text-sm bg-card border border-border rounded-xl resize-none outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground font-content"
-            disabled={isGenerating}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerate();
-            }}
-          />
-          <Button
-            variant="hero"
-            size="icon"
-            onClick={() => handleGenerate()}
-            disabled={!prompt.trim() || isGenerating}
-            className="absolute bottom-3 right-3"
+        <div className="text-center mb-10">
+          <motion.div 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-border shadow-sm text-primary text-xs font-bold uppercase tracking-widest mb-6"
           >
-            {isGenerating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <ArrowRight className="w-4 h-4" />
-            )}
-          </Button>
+            <Sparkles className="w-3.5 h-3.5" />
+            AI Content Specialist
+          </motion.div>
+          <h1 className="text-6xl font-display font-black text-slate-900 mb-6 tracking-tight leading-[1.1]">
+            Turn ideas into <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary bg-300% animate-gradient">high-impact slides</span>.
+          </h1>
+          <p className="text-xl text-slate-500 font-medium max-w-xl mx-auto leading-relaxed">
+            Professional-level content research and structuring powered by Gemini 2.0 Flash.
+          </p>
         </div>
 
+        {/* Feature Highlights */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {[
+            { label: 'Detailed Text', icon: FileText, color: 'text-primary' },
+            { label: 'Smart Layouts', icon: Presentation, color: 'text-accent' },
+            { label: 'AI Editor', icon: Wand2, color: 'text-indigo-500' },
+          ].map((feat) => (
+            <div key={feat.label} className="flex flex-col items-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+              <feat.icon className={`w-5 h-5 ${feat.color} mb-2`} />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{feat.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Prompt Input Area */}
+        <div className="relative mb-8 group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-[22px] blur opacity-25 group-focus-within:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe your topic in detail... (e.g. A comprehensive guide to quantum computing for investors)"
+              className="w-full h-48 p-8 pr-20 text-lg bg-white/80 backdrop-blur-md border border-slate-200 rounded-[32px] shadow-2xl shadow-primary/5 resize-none outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-content placeholder:text-slate-400 leading-relaxed"
+              disabled={isGenerating}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerate();
+              }}
+            />
+            <Button
+              variant="default"
+              size="lg"
+              onClick={() => handleGenerate()}
+              disabled={!prompt.trim() || isGenerating}
+              className="absolute bottom-4 right-4 rounded-2xl h-12 px-6 shadow-xl shadow-primary/20 transition-transform active:scale-95"
+            >
+              {isGenerating ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <span className="mr-2 font-bold uppercase tracking-wider text-xs">Generate</span>
+                  <Wand2 className="w-4 h-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Generation Overlays */}
         {isGenerating && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center mb-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-10 p-8 rounded-3xl bg-slate-900 text-white shadow-2xl relative overflow-hidden"
           >
-            <div className="inline-flex items-center gap-2 text-sm text-primary font-medium">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              AI is crafting your presentation...
+            <div className="absolute top-0 right-0 p-4">
+              <Sparkles className="w-8 h-8 text-white/10" />
             </div>
-            <div className="mt-3 h-1 bg-muted rounded-full overflow-hidden max-w-xs mx-auto">
-              <motion.div
-                initial={{ width: '0%' }}
-                animate={{ width: '95%' }}
-                transition={{ duration: 8, ease: 'easeOut' }}
-                className="h-full bg-hero-gradient rounded-full"
-              />
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="relative mb-6">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 bg-primary/20 rounded-full animate-ping" />
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-bold mb-2 tracking-tight">{steps[generationStep]}</h3>
+              <p className="text-xs text-slate-400 mb-6 font-medium uppercase tracking-[0.2em]">Step {generationStep + 1} of {steps.length}</p>
+              
+              <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden max-w-md">
+                <motion.div
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${((generationStep + 1) / steps.length) * 100}%` }}
+                  transition={{ duration: 1, ease: 'easeInOut' }}
+                  className="h-full bg-hero-gradient"
+                />
+              </div>
             </div>
           </motion.div>
         )}
 
         {/* Preset Prompts */}
         {!isGenerating && (
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Quick Start</p>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="animate-in-fast">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Jump Start</span>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
               {presetPrompts.map((item, i) => (
                 <motion.button
                   key={item.label}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 + i * 0.05 }}
                   onClick={() => handleGenerate(item.prompt, item.type)}
-                  className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:border-primary/30 hover:shadow-md text-left transition-all duration-150 group"
+                  className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group text-left"
                 >
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-150">
-                    <item.icon className="w-4 h-4" />
+                  <div className="p-3 rounded-xl bg-slate-50 text-slate-600 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <item.icon className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.prompt}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-800">{item.label}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 font-medium">Use template</p>
                   </div>
                 </motion.button>
               ))}
@@ -159,9 +243,12 @@ export default function CreatePage() {
           </div>
         )}
 
-        <div className="text-center mt-6">
-          <button onClick={() => navigate('/')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to Dashboard
+        <div className="text-center mt-10">
+          <button 
+            onClick={() => navigate('/')} 
+            className="group flex items-center gap-2 mx-auto text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
+          >
+            <span className="transition-transform group-hover:-translate-x-1">←</span> Dashboard
           </button>
         </div>
       </motion.div>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import AppSidebar from '@/components/AppSidebar';
 import TopBar from '@/components/TopBar';
 import ProjectCard from '@/components/ProjectCard';
 import TemplateGallery from '@/components/TemplateGallery';
@@ -10,11 +9,11 @@ import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Presentation } from '@/types/presentation';
+import { Presentation, PresentationTheme, Slide } from '@/types/presentation';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [presentations, setPresentations] = useState<any[]>([]);
+  const [presentations, setPresentations] = useState<Record<string, unknown>[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -32,21 +31,33 @@ const Index = () => {
   }, []);
 
   // Convert DB presentations to display format
-  const displayPresentations = presentations.length > 0
-    ? presentations.map((p: any) => ({
-        id: p.id,
-        title: p.title,
-        description: p.description || '',
-        createdAt: new Date(p.created_at).toLocaleDateString(),
-        updatedAt: new Date(p.updated_at).toLocaleDateString(),
-        theme: (p.theme as any) || { primaryColor: '#4F46E5', accentColor: '#10B981', fontHeading: 'Inter', fontBody: 'Lora', style: 'modern' as const },
-        slides: (p.slides as any[]) || [],
+  const displayPresentations: Presentation[] = presentations.length > 0
+    ? presentations.map((p) => ({
+        id: p.id as string,
+        title: p.title as string,
+        description: (p.description as string) || '',
+        createdAt: p.created_at as string,
+        updatedAt: p.updated_at as string,
+        theme: (p.theme as PresentationTheme) || { 
+          name: 'Default',
+          primaryColor: '#4F46E5', 
+          accentColor: '#10B981', 
+          backgroundColor: '#FFFFFF',
+          textColor: '#1F2937',
+          fontHeading: 'Inter', 
+          fontBody: 'Lora', 
+          style: 'modern' as const,
+          borderRadius: '0.75rem'
+        },
+        slides: (p.slides as unknown as Slide[]) || [],
+        status: (p.status as 'draft' | 'published' | 'shared') || 'draft',
+        userId: (p.user_id as string) || '',
+        isPublic: (p.is_public as boolean) || false
       }))
     : mockPresentations;
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <AppSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
         <main className="flex-1 overflow-y-auto p-6">

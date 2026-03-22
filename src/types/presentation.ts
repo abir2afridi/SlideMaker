@@ -32,6 +32,8 @@ export interface Slide {
   speakerNotes?: string;
   bgColor?: string;
   transition?: 'none' | 'fade' | 'slide' | 'zoom';
+  visual_prompt?: string;
+  image_url?: string | null;
 }
 
 export interface PresenceUser {

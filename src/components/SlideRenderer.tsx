@@ -173,7 +173,7 @@ export default function SlideRenderer({ slide, theme, mode = 'view', onUpdateBlo
           return (
             <ul key={block.id} className="space-y-6 my-8">
               {items.map((item, i) => (
-                <li key={i} className="flex items-start gap-5">
+                <li key={`${block.id}-${i}-${item}`} className="flex items-start gap-5">
                   <div className="w-3 h-3 rounded-full shrink-0 mt-3.5" style={{ backgroundColor: t.primaryColor }} />
                   {isEditable ? (
                     <BlockEditor 
@@ -199,7 +199,7 @@ export default function SlideRenderer({ slide, theme, mode = 'view', onUpdateBlo
           return (
             <div key={block.id} className="grid grid-cols-2 md:grid-cols-4 gap-8 my-10 w-full">
               {stats.map((stat, i) => (
-                <div key={i} className="text-center p-8 rounded-3xl border border-white/10 shadow-lg backdrop-blur-sm" style={{ backgroundColor: `${t.primaryColor}08` }}>
+                <div key={`${block.id}-${stat?.label || 'stat'}-${i}`} className="text-center p-8 rounded-3xl border border-white/10 shadow-lg backdrop-blur-sm" style={{ backgroundColor: `${t.primaryColor}08` }}>
                   {isEditable ? (
                     <>
                       <BlockEditor 
@@ -241,7 +241,7 @@ export default function SlideRenderer({ slide, theme, mode = 'view', onUpdateBlo
               {compareItems.map((item, i) => {
                 const Icon = iconMap[item.icon] || Zap;
                 return (
-                  <div key={i} className="flex gap-6 p-8 rounded-3xl border border-white/10 shadow-xl text-left bg-white/5 backdrop-blur-md">
+                  <div key={`${block.id}-${item?.title || 'item'}-${i}`} className="flex gap-6 p-8 rounded-3xl border border-white/10 shadow-xl text-left bg-white/5 backdrop-blur-md">
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-lg" style={{ backgroundColor: `${t.primaryColor}20`, color: t.primaryColor }}>
                       <Icon className="w-8 h-8" />
                     </div>
@@ -286,11 +286,40 @@ export default function SlideRenderer({ slide, theme, mode = 'view', onUpdateBlo
           const content = typeof block.content === 'string' ? block.content : '';
           return (
             <div key={block.id} className="relative rounded-3xl overflow-hidden my-10 group shadow-2xl border-4 border-white/10">
-              <img 
-                src={content || 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80'} 
-                alt="Slide content"
-                className="w-full h-auto object-cover max-h-[600px]"
-              />
+              {content && content.startsWith('data:image') ? (
+                <img 
+                  src={content} 
+                  alt="Slide content"
+                  className="w-full h-auto object-cover max-h-[600px]"
+                  loading="lazy"
+                />
+              ) : content ? (
+                <img 
+                  src={content} 
+                  alt="Slide content"
+                  className="w-full h-auto object-cover max-h-[600px]"
+                  loading="lazy"
+                  onError={(e) => {
+                    // If image fails to load, show gradient fallback
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.style.background = 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)';
+                      parent.innerHTML = '<div class="w-full h-[400px] flex items-center justify-center text-white/60 text-lg">Image unavailable</div>';
+                    }
+                  }}
+                />
+              ) : (
+                <div 
+                  className="w-full h-[400px] flex items-center justify-center text-white/60 text-lg"
+                  style={{
+                    background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+                  }}
+                >
+                  No image available
+                </div>
+              )}
               {isEditable && (
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 text-white w-[90%]">
@@ -375,12 +404,28 @@ export default function SlideRenderer({ slide, theme, mode = 'view', onUpdateBlo
       case 'hero': {
         const imageBlock = normalizedBlocks.find(b => b.type === 'image');
         const textBlocks = normalizedBlocks.filter(b => b.type !== 'image');
-        const bgImg = imageBlock?.content as string || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1920&q=80';
+        const bgImg = imageBlock?.content as string || '';
         
         return (
           <div className="w-full h-full flex flex-col items-center justify-center p-32 text-center relative overflow-hidden">
             <div className="absolute inset-0 z-0">
-               <img src={bgImg} className="w-full h-full object-cover" alt="Hero" />
+               {bgImg ? (
+                 <img 
+                   src={bgImg} 
+                   className="w-full h-full object-cover" 
+                   alt="Hero background"
+                   onError={(e) => {
+                     const target = e.target as HTMLImageElement;
+                     target.style.display = 'none';
+                     const parent = target.parentElement;
+                     if (parent) {
+                       parent.style.background = 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)';
+                     }
+                   }}
+                 />
+               ) : (
+                 <div style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)' }} className="w-full h-full" />
+               )}
                <div className="absolute inset-0 bg-slate-950/70" />
             </div>
             <div className="z-10 relative flex flex-col items-center max-w-6xl">
@@ -396,7 +441,7 @@ export default function SlideRenderer({ slide, theme, mode = 'view', onUpdateBlo
       case 'image-text': {
         const imageBlock = normalizedBlocks.find(b => b.type === 'image');
         const otherBlocks = normalizedBlocks.filter(b => b.type !== 'image');
-        const img = imageBlock?.content as string || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=1200&q=80';
+        const img = imageBlock?.content as string || '';
         
         return (
           <div className="w-full h-full flex">
@@ -409,7 +454,26 @@ export default function SlideRenderer({ slide, theme, mode = 'view', onUpdateBlo
                </div>
             </div>
             <div className="flex-1 relative overflow-hidden shadow-2xl skew-x-[-2deg] translate-x-10">
-              <img src={img} className="w-full h-full object-cover skew-x-[2deg]" alt="Slide visual" />
+              {img ? (
+                <img 
+                  src={img} 
+                  className="w-full h-full object-cover skew-x-[2deg]" 
+                  alt="Slide visual"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.style.background = 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)';
+                    }
+                  }}
+                />
+              ) : (
+                <div 
+                  className="w-full h-full skew-x-[2deg]" 
+                  style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)' }}
+                />
+              )}
               <div className="absolute inset-0 ring-inset ring-1 ring-white/10" />
             </div>
           </div>
