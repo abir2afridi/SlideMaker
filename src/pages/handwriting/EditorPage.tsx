@@ -19,6 +19,8 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import {
   Dialog,
   DialogContent,
@@ -76,6 +78,7 @@ const EditorPage = () => {
   const [showLeftPanel, setShowLeftPanel] = useState(true);
   const [showRightPanel, setShowRightPanel] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [fontSearchOpen, setFontSearchOpen] = useState(false);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const contentFileInputRef = useRef<HTMLInputElement>(null);
   const contentDiagramInputRef = useRef<HTMLInputElement>(null);
@@ -710,7 +713,7 @@ const EditorPage = () => {
                   </div>
                 </div>
 
-              <div className="overflow-y-auto p-4 pt-3 pb-2 scrollbar-none scroll-smooth">
+              <div className="overflow-y-auto p-4 pt-3 pb-2 scrollbar-premium">
 
 <AnimatePresence>
                   {(showBulk || isAllBlank) && (
@@ -904,21 +907,38 @@ const EditorPage = () => {
                       </button>
 
                       {pages[currentPageIndex]?.sections[0]?.type === 'handwritten' && (
-                        <Select
-                          value={pages[currentPageIndex]?.sections[0]?.styleId || ''}
-                          onValueChange={(v) => updateSection(currentPageIndex, 0, { styleId: v })}
-                        >
-                          <SelectTrigger className="w-40 h-8 text-xs rounded-lg">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {HANDWRITING_STYLES.map(s => (
-                              <SelectItem key={s.id} value={s.id}>
-                                <span className={cn(s.fontClass, "text-sm")}>{s.name}</span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover open={fontSearchOpen} onOpenChange={setFontSearchOpen}>
+                          <PopoverTrigger asChild>
+                            <button className="flex items-center gap-2 px-3 h-8 rounded-lg text-xs font-semibold border border-border bg-white hover:bg-muted/50 transition-all w-40 justify-between">
+                              <span className={cn(HANDWRITING_STYLES.find(s => s.id === pages[currentPageIndex]?.sections[0]?.styleId)?.fontClass, "text-sm truncate")}>
+                                {HANDWRITING_STYLES.find(s => s.id === pages[currentPageIndex]?.sections[0]?.styleId)?.name || 'Select style'}
+                              </span>
+                              <ChevronDown className="h-3 w-3 opacity-40 shrink-0" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-56 p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search font..." className="h-8 text-xs" />
+                              <CommandEmpty className="text-xs py-2 text-muted-foreground">No font found.</CommandEmpty>
+                              <CommandGroup className="max-h-48 overflow-y-auto">
+                                {HANDWRITING_STYLES.map(s => (
+                                  <CommandItem
+                                    key={s.id}
+                                    value={s.name}
+                                    onSelect={() => {
+                                      updateSection(currentPageIndex, 0, { styleId: s.id });
+                                      setFontSearchOpen(false);
+                                    }}
+                                    className="text-xs cursor-pointer"
+                                  >
+                                    <Check className={cn("h-3 w-3 mr-2 shrink-0", pages[currentPageIndex]?.sections[0]?.styleId === s.id ? "opacity-100" : "opacity-0")} />
+                                    <span className={cn(s.fontClass, "text-sm")}>{s.name}</span>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       )}
                     </div>
 
@@ -1055,30 +1075,32 @@ const EditorPage = () => {
 
  {/* MAIN SCROLL AREA: CLEAN & FOCUSED */}
              <div className="flex-1 flex flex-col min-w-0 bg-[#f4f4f7]">
-               {/* Page Strip - inside content frame */}
-               <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b border-border/40 bg-white overflow-x-auto no-scrollbar z-30">
-                 {pages.map((_, i) => (
-                   <button
-                     key={i}
-                     onClick={() => scrollToPage(i)}
-                     className={cn(
-                       "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 shrink-0 border text-xs font-semibold",
-                       i === currentPageIndex
-                         ? "bg-white border-primary shadow-md ring-1 ring-primary/10 text-primary"
-                         : "bg-muted/10 border-transparent hover:bg-muted/30 text-muted-foreground hover:text-foreground"
-                     )}
-                   >
-                     <span className="font-bold">Sheet {i + 1}</span>
-                     {i === currentPageIndex && <span className="text-[9px] opacity-60">· Focusing</span>}
-                   </button>
-                 ))}
-                 <button
-                   onClick={addPage}
-                   className="shrink-0 w-7 h-7 rounded-lg border-border/8 border-dashed border-2 flex items-center justify-center hover:bg-muted/20 hover:border-primary transition-all opacity-40 hover:opacity-100"
-                 >
-                   <Plus className="h-3 w-3" />
-                 </button>
-               </div>
+                {/* Page Strip - inside content frame */}
+                <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b border-border/40 bg-white z-30">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1 pr-2">
+                    {pages.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => scrollToPage(i)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300 shrink-0 border text-xs font-semibold",
+                          i === currentPageIndex
+                            ? "bg-white border-primary shadow-md ring-1 ring-primary/10 text-primary"
+                            : "bg-muted/10 border-transparent hover:bg-muted/30 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <span className="font-bold">Sheet {i + 1}</span>
+                        {i === currentPageIndex && <span className="text-[9px] opacity-60">· Focusing</span>}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={addPage}
+                    className="shrink-0 w-7 h-7 rounded-lg border-border/8 border-dashed border-2 flex items-center justify-center hover:bg-muted/20 hover:border-primary transition-all opacity-40 hover:opacity-100"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
 
                <div
                  ref={scrollContainerRef}
@@ -1213,7 +1235,7 @@ const EditorPage = () => {
                      />
                    </TabsContent>
                     <TabsContent value="paper" className="mt-0 h-full">
-                      <div className="h-full overflow-y-auto">
+                       <div className="h-full overflow-y-auto scrollbar-premium">
                         <PaperStyleTab
                        selectedLayoutId={globalLayoutId}
                        showMargin={showMargin}

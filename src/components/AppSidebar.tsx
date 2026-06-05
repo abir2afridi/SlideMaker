@@ -1,24 +1,15 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Presentation, FileText, Layout, BarChart3, Globe, FolderOpen, Settings, Home, PenTool, Palette, Eye, Download, LayoutTemplate, PenTool as WriterIcon, ChevronLeft, PanelLeft } from 'lucide-react';
+import { Sparkles, Home, PenTool as WriterIcon, ChevronLeft, PanelLeft } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: Home, label: 'Home', path: '/' },
-  { icon: Sparkles, label: 'Create Slides', path: '/create' },
-  { icon: Presentation, label: 'Presentations', path: '/dashboard' },
-  { icon: Layout, label: 'Templates', path: '/templates' },
 ];
 
 const writerItems = [
   { icon: WriterIcon, label: 'Handwriting Editor', path: '/editor-handwriting' },
-];
-
-const secondaryItems = [
-  { icon: FolderOpen, label: 'All Projects', path: '/dashboard', count: 12 },
-  { icon: Settings, label: 'Settings', path: '/settings' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics', count: null },
 ];
 
 export default function AppSidebar({ className }: { className?: string }) {
@@ -149,49 +140,7 @@ export default function AppSidebar({ className }: { className?: string }) {
           <div className="h-px bg-border/60" />
         </div>
 
-        {/* Secondary Nav */}
-        <nav className="p-3 space-y-1">
-          {isExpanded && (
-             <motion.p 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="px-3 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground whitespace-nowrap mb-1"
-            >
-               Library
-             </motion.p>
-          )}
-          {secondaryItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 overflow-hidden",
-                location.pathname === item.path
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <item.icon className="w-4.5 h-4.5 shrink-0" />
-              <motion.span 
-                animate={{ opacity: isExpanded ? 1 : 0 }} 
-                className="flex-1 text-left whitespace-nowrap"
-              >
-                {item.label}
-              </motion.span>
-              <AnimatePresence>
-                {isExpanded && item.count !== null && (
-                  <motion.span 
-                    initial={{ opacity: 0, scale: 0.8 }} 
-                    animate={{ opacity: 1, scale: 1 }} 
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="text-[10px] bg-muted/80 font-bold text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0"
-                  >
-                    {item.count}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          ))}
-        </nav>
+        <div className="flex-1" />
 
         {/* Upgrade CTA */}
         <AnimatePresence>

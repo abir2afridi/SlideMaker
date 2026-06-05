@@ -120,6 +120,22 @@
   .font-content {
     font-family: 'Lora', Georgia, serif;
   }
+
+  .scrollbar-premium {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted) / 0.3) transparent;
+  }
+  .scrollbar-premium::-webkit-scrollbar { width: 4px; }
+  .scrollbar-premium::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-premium::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.1);
+    border-radius: 20px;
+    border: 1px solid transparent;
+  }
+  .scrollbar-premium:hover::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.25);
+  }
+
   .text-gradient {
     background: var(--hero-gradient);
     -webkit-background-clip: text;

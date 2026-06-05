@@ -10,7 +10,6 @@ import Editor from "./pages/Editor.tsx";
 import Templates from "./pages/Templates.tsx";
 import Analytics from "./pages/Analytics.tsx";
 import Share from "./pages/Share.tsx";
-import Settings from "./pages/Settings.tsx";
 
 // Handwriting Features
 import HandwritingLanding from "./pages/handwriting/LandingPage.tsx";
@@ -32,7 +31,6 @@ const App = () => (
           <Route path="/templates" element={<Templates />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/share/:token" element={<Share />} />
-          <Route path="/settings" element={<Settings />} />
 
           {/* Handwriting Flow Routes - Consolidated into EditorPage */}
           <Route path="/editor-handwriting" element={<HandwritingEditor />} />

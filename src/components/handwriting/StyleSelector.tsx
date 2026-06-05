@@ -1,8 +1,6 @@
 import { HANDWRITING_STYLES, INK_COLORS } from '@/lib/handwriting/types';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
-import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface StyleSelectorProps {
   selectedStyleId: string;
@@ -11,48 +9,30 @@ interface StyleSelectorProps {
   onColorChange: (id: string) => void;
   hideColor?: boolean;
   hideTitle?: boolean;
+  search?: string;
+  activeCategory?: string;
 }
 
-const CATEGORIES = [
-  { id: 'all', label: 'All' },
-  { id: 'neat', label: 'Neat' },
-  { id: 'casual', label: 'Casual' },
-  { id: 'messy', label: 'Messy' },
-  { id: 'cursive', label: 'Cursive' },
-  { id: 'artistic', label: 'Artistic' },
-  { id: 'typed', label: 'Typed' },
-];
-
-export function StyleSelector({ selectedStyleId, selectedColorId, onStyleChange, onColorChange, hideColor, hideTitle }: StyleSelectorProps) {
+export function StyleSelector({ selectedStyleId, selectedColorId, onStyleChange, onColorChange, hideColor, hideTitle, search = '', activeCategory = 'all' }: StyleSelectorProps) {
   const selectedColor = INK_COLORS.find(c => c.id === selectedColorId) || INK_COLORS[0];
-  const [activeCategory, setActiveCategory] = useState('all');
 
-  const filteredStyles = activeCategory === 'all'
-    ? HANDWRITING_STYLES
-    : HANDWRITING_STYLES.filter(s => s.category === activeCategory);
+  const filteredStyles = HANDWRITING_STYLES.filter(s => {
+    const matchesCategory = activeCategory === 'all' || s.category === activeCategory;
+    const matchesSearch = search === '' || s.name.toLowerCase().includes(search.toLowerCase()) || s.category.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         {!hideTitle && <h3 className="font-display text-lg text-foreground mb-3">Handwriting Style</h3>}
-        
-        {/* Category filter */}
-        <div className="mb-3">
-          <Select value={activeCategory} onValueChange={setActiveCategory}>
-            <SelectTrigger className="w-full h-9 text-xs font-semibold bg-background border-border/40">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map(cat => (
-                <SelectItem key={cat.id} value={cat.id} className="text-xs font-medium">
-                  {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {filteredStyles.length === 0 && (
+            <div className="col-span-full text-center py-6 text-xs text-muted-foreground">
+              No fonts found for "{search}"
+            </div>
+          )}
           {filteredStyles.map((style, idx) => (
             <button
               key={style.id}
@@ -123,8 +103,6 @@ export function StyleSelector({ selectedStyleId, selectedColorId, onStyleChange,
                  type="color"
                  value={selectedColor.value}
                  onChange={(e) => {
-                   // We don't have a direct 'setCustomColor' in store yet, 
-                   // but we can pass a special marker or just use it as colorId if it starts with #
                    onColorChange(e.target.value);
                  }}
                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
