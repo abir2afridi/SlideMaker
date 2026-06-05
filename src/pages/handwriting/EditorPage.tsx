@@ -68,7 +68,11 @@ const EditorPage = () => {
   );
 
   useEffect(() => {
-    if (isAllBlank) setShowBulk(true);
+    if (isAllBlank) {
+      setShowBulk(true);
+    } else {
+      setShowBulk(false);
+    }
   }, [isAllBlank]);
   const [exporting, setExporting] = useState<string | null>(null);
   const [showImageExport, setShowImageExport] = useState(false);
@@ -278,9 +282,9 @@ const EditorPage = () => {
   if (!activeNoteId) {
     return (
       <div className="flex h-screen overflow-hidden bg-background w-full fixed inset-0">
-        <AppSidebar className="shrink-0 h-screen sticky top-0" />
+        <AppSidebar className="shrink-0 h-screen sticky top-0" hideMobileButton />
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
-          <header className="h-16 px-10 border-b border-border/40 bg-background flex items-center justify-between shrink-0 z-20 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+          <header className="h-16 px-4 sm:px-6 md:px-10 border-b border-border/40 bg-background flex items-center justify-between shrink-0 z-20 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center border border-primary/10">
                 <PenTool className="h-5 w-5 text-primary" />
@@ -472,22 +476,22 @@ const EditorPage = () => {
   return (
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden bg-background w-full fixed inset-0 selection:bg-primary/10">
-      <AppSidebar className="shrink-0 h-screen sticky top-0" />
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
-        
-        {/* ENHANCED TOP BAR */}
-        <header className="h-14 border-b border-border/40 bg-background/80 backdrop-blur-md px-3 md:px-6 flex items-center justify-between shrink-0 z-50">
-          <div className="flex items-center gap-6">
-             <div className="flex items-center gap-4">
+<AppSidebar className="shrink-0 h-screen sticky top-0" hideMobileButton />
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+          
+          {/* ENHANCED TOP BAR */}
+        <header className="h-14 border-b border-border/40 bg-background/80 backdrop-blur-md px-2 md:px-6 flex items-center justify-between shrink-0 z-50">
+          <div className="flex items-center gap-2 md:gap-6 min-w-0 flex-1">
+             <div className="flex items-center gap-2 md:gap-4 min-w-0">
                <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={() => useAppStore.setState({ activeNoteId: null })}
-                className="h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground/60 hover:text-foreground transition-all"
+                className="h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground/60 hover:text-foreground transition-all shrink-0"
                >
                  <ArrowLeft className="h-4 w-4" />
                </Button>
-               <div className="flex flex-col">
+               <div className="flex flex-col min-w-0 max-w-[120px] sm:max-w-[180px] md:max-w-none">
                  <input 
                   type="text" 
                   value={notes.find(n => n.id === activeNoteId)?.title || noteTitle}
@@ -497,32 +501,33 @@ const EditorPage = () => {
                     setIsSaved(false);
                     setTimeout(() => setIsSaved(true), 1500);
                   }}
-                  className="bg-transparent border-0 p-0 text-sm font-bold tracking-tight text-foreground focus:ring-0 w-48 placeholder:text-muted-foreground/30 h-6"
+                  className="bg-transparent border-0 p-0 text-sm font-bold tracking-tight text-foreground focus:ring-0 w-full placeholder:text-muted-foreground/30 h-6 truncate"
                   placeholder="Draft Name"
                  />
                  <div className="flex items-center gap-1.5">
                    <Cloud className={cn("h-3 w-3 transition-colors", isSaved ? "text-green-500/80" : "text-amber-500/80")} />
-                   <span className="text-[9px] font-medium text-muted-foreground/60 uppercase tracking-widest translate-y-[0.5px]">
+                   <span className="text-[9px] font-medium text-muted-foreground/60 uppercase tracking-widest translate-y-[0.5px] hidden sm:inline">
                      {isSaved ? 'Draft Saved' : 'Saving Changes...'}
                    </span>
                  </div>
                 </div>
               </div>
               
-              <div className="h-4 w-[1px] bg-border/40" />
+              <div className="h-4 w-[1px] bg-border/40 hidden md:block" />
 
               {/* HISTORY ACTIONS - PREMIUM */}
-              <div className="flex items-center gap-1.5 bg-background border border-border/40 px-2 py-1.5 rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)]">
+              <div className="hidden sm:flex items-center gap-1.5 bg-background border border-border/40 px-2 py-1.5 rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)]">
                 <Tooltip>
-                  <TooltipTrigger asChild>                    <Button
+                  <TooltipTrigger asChild>
+                    <Button
                       variant="ghost"
                       size="sm"
                       onClick={undo}
                       disabled={past.length === 0}
-                      className="h-8 px-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all disabled:opacity-20 gap-1.5"
+                      className="h-8 px-1.5 md:px-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all disabled:opacity-20 gap-0 md:gap-1.5"
                     >
                       <Undo2 className="h-4 w-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Undo</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">Undo</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-[10px] font-bold">Undo Action (Ctrl+Z)</TooltipContent>
@@ -535,10 +540,10 @@ const EditorPage = () => {
                       size="sm"
                       onClick={redo}
                       disabled={future.length === 0}
-                      className="h-8 px-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all disabled:opacity-20 gap-1.5"
+                      className="h-8 px-1.5 md:px-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all disabled:opacity-20 gap-0 md:gap-1.5"
                     >
                       <Redo2 className="h-4 w-4" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Redo</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest hidden md:inline">Redo</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-[10px] font-bold">Redo Action (Ctrl+Y)</TooltipContent>
@@ -549,24 +554,24 @@ const EditorPage = () => {
 
               <div className="h-4 w-[1px] bg-border/40" />
              
-              <div className="flex items-center gap-6">
-                 <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 md:gap-6">
+                 <div className="items-center gap-2 hidden md:flex">
                     <div className={cn("w-1.5 h-1.5 rounded-full", isSaved ? "bg-green-500" : "bg-primary animate-pulse")} />
                     <p className="text-[10px] text-muted-foreground/60 font-medium uppercase tracking-[0.15em]">Private Draft</p>
                  </div>
 
-                 <div className="h-4 w-[1px] bg-border/40" />
+                 <div className="h-4 w-[1px] bg-border/40 hidden md:block" />
 
-                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/10">
-                    <FileText className="h-3 w-3 text-primary/60" />
-                    <span className="text-[10px] font-black text-primary/80 tracking-wider">
-                       Page {currentPageIndex + 1} / {pages.length}
+                 <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/10">
+                    <FileText className="h-3 w-3 text-primary/60 hidden sm:block" />
+                    <span className="text-[9px] md:text-[10px] font-black text-primary/80 tracking-wider whitespace-nowrap">
+                       {currentPageIndex + 1}/{pages.length}
                     </span>
                  </div>
 
-                 <div className="h-4 w-[1px] bg-border/40" />
-                 
-                  <div className="flex items-center gap-3 bg-muted/20 px-3 py-1.5 rounded-lg border border-border/20">
+                 <div className="h-4 w-[1px] bg-border/40 hidden md:block" />
+                  
+                  <div className="items-center gap-1 md:gap-3 bg-muted/20 px-1.5 md:px-3 py-1.5 rounded-lg border border-border/20 hidden md:flex">
                      <Tooltip>
                        <TooltipTrigger asChild>
                          <ZoomOut className="h-3 w-3 opacity-30 cursor-pointer hover:opacity-100 transition-opacity" onClick={() => handleManualZoom(Math.max(0.3, zoomScale - 0.1))} />
@@ -579,30 +584,30 @@ const EditorPage = () => {
                      min={0.3}
                      max={1.5}
                      step={0.01}
-                     className="w-24 h-4 cursor-pointer"
+                     className="w-16 md:w-24 h-4 cursor-pointer"
                    />
-                     <span className="text-[10px] font-bold text-muted-foreground/80 w-10 tabular-nums">{Math.round(zoomScale * 100)}%</span>
+                     <span className="text-[10px] font-bold text-muted-foreground/80 w-8 md:w-10 tabular-nums">{Math.round(zoomScale * 100)}%</span>
                      <Tooltip>
                       <TooltipTrigger asChild>
                          <ZoomIn className="h-3 w-3 opacity-30 cursor-pointer hover:opacity-100 transition-opacity" onClick={() => handleManualZoom(Math.min(1.5, zoomScale + 0.1))} />
                       </TooltipTrigger>
                       <TooltipContent className="text-[10px] font-bold">Zoom In</TooltipContent>
                     </Tooltip>
-                    <div className="h-3 w-[1px] bg-border/40 mx-1" />
+                    <div className="h-3 w-[1px] bg-border/40 mx-0.5 md:mx-1" />
                     <button 
                       onClick={() => {
                         setZoomScale(1.0);
                         setIsAutoZoom(false);
                       }} 
-                      className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:text-primary/70 transition-colors px-2 py-0.5 rounded-md hover:bg-primary/5 border border-primary/10"
+                      className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:text-primary/70 transition-colors px-1 md:px-2 py-0.5 rounded-md hover:bg-primary/5 border border-primary/10 hidden md:inline"
                     >
-                       Reset 100%
+                       Reset
                     </button>
                  </div>
              </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Live Clock */}
             <div className="hidden md:flex items-center gap-1 text-sm font-mono select-none mr-1">
               <span className="font-semibold text-foreground">{clockH12}:{clockMm}</span>
@@ -612,6 +617,17 @@ const EditorPage = () => {
             </div>
 
             <div className="h-4 w-[1px] bg-border/40 hidden md:block" />
+
+            {/* Mobile zoom */}
+            <div className="flex items-center gap-1 md:hidden">
+              <button onClick={() => handleManualZoom(Math.max(0.3, zoomScale - 0.1))} className="p-1 text-muted-foreground/60 hover:text-foreground">
+                <ZoomOut className="h-3.5 w-3.5" />
+              </button>
+              <span className="text-[10px] font-bold text-foreground w-8 text-center tabular-nums">{Math.round(zoomScale * 100)}%</span>
+              <button onClick={() => handleManualZoom(Math.min(1.5, zoomScale + 0.1))} className="p-1 text-muted-foreground/60 hover:text-foreground">
+                <ZoomIn className="h-3.5 w-3.5" />
+              </button>
+            </div>
 
             {/* Mobile panel toggles */}
             {isMobile && (
